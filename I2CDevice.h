@@ -15,7 +15,11 @@
 
 #define I2C_1 "/dev/i2c-1" //!< File Path for the i2c-1 bus.
 #define I2C_2 "/dev/i2c-2" //!< File Path for the i2c-2 bus.
-#define READ_LEN 1
+
+#define ONE_BYTE  1
+#define TWO_BYTES 2
+
+#define I2C_BUS_COUNT 2
 
 namespace I2CDevice {
     using namespace std;
@@ -23,45 +27,134 @@ namespace I2CDevice {
     class I2CDevice : public IDevice {
 
     public:
+        /**
+         \fn Public Destructor
+         */
         ~I2CDevice( );
+
+        /**
+         \fn Public Constructor
+         \param int _DeviceAddress = Hex address value for the I2C device.
+         \param int _BusId = the I2C Bus no. that the I2C device is plugged into.
+         */
         I2CDevice( int _DeviceAddress, int _BusId );
 
         /*I2C Specific Members*/
 
+        /**
+         \fn Public GetDeviceHandle
+         \param none
+         \brief Returns the current FileHandle for reading and writing to the I2C device.
+         */
         virtual int GetDeviceFileHandle( );
+
+        /**
+         \fn Public GetFilePath
+         \param none
+         \brief Returns then FilePath for accessing the I2C device.
+         */
         virtual const char * GetFilePath( );
+
+        /**
+         \fn Public GetValueFromRegister
+         \param unsigned char _RegisterValue
+         \brief
+         */
         virtual short GetValueFromRegister( unsigned char _RegisterValue );
+
+        /**
+         \fn Public SetRegisterValue
+         \param unsigned char _RegisterValue
+         \brief
+         */
         virtual void SetRegisterValue( unsigned char _RegisterValue );
+
+        /**
+         \fn Public SetRegisterAddress
+         \param unsigned char _RegisterAddress
+         \brief
+         */
         virtual void SetRegisterAddress( unsigned char _RegisterAddress );
 
+        /**
+         \fn Public WriteToDevice
+         \param size_t _BufferSize
+         \brief
+         */
+        virtual int WriteToDevice( size_t _BufferSize );
+
     private:
-        virtual struct I2CBus { const char * BusPath; } _Bus[ 2 ];
+
+        /**
+         \fn Private Struct I2CBus
+         \brief
+         */
+        virtual struct I2CBus { const char * BusPath; } _Bus[ I2C_BUS_COUNT ];
 
     protected:
+
+        /**
+         \fn Protected SetBusPaths
+         \param none
+         \brief Set Path to all the available buses. As set with I2CBus and Defines.
+         */
         virtual void SetBusPaths( );
-        virtual void SelectABusPath( int _BusId );
+
+        /**
+         \fn Protected ValidateBusId
+         \param int _BusId
+         \brief Make sure the BusId being used is valid.
+         */
+        virtual int ValidateBusId( int _BusId );
+
+        /**
+         \fn Protected SelectABusPath
+         \param none
+         \brief Select which Bus Path we can find your I2C device at.
+         */
+        virtual void SelectABusPath( );
+
+        /**
+         \fn Protected SetDeviceAddress
+         \param int _DeviceAddress
+         \brief Used to store the device address (Hex)
+         */
         virtual void SetDeviceAddress( int _DeviceAddress );
 
         /* From IDevice Interface*/
-        virtual int ConnectToDevice( ) { return ioctl( this->FileHandle, I2C_SLAVE, this->DeviceAddress ); };
-        virtual int OpenDevice( );
-        virtual int WriteToDevice( size_t _BufferSize );
-        virtual short ReadDevice( int _BufferSize );
 
-        /*protected vars*/
+        /**
+         \fn Protected ConnectToDevice
+         \param none
+         \brief Sets up an IOCTL connection to the I2C device as a Slave for Linux.
+         */
+        virtual int ConnectToDevice( ) { return ioctl( this->FileHandle, I2C_SLAVE, this->DeviceAddress ); };
+
+        /**
+         \fn Protected OpenDevice
+         \param none
+         \brief Attempt to open the FileHandle.
+         */
+        virtual int OpenDevice( );
+
+        /**
+         \fn Protected ReadDevice
+         \param size_t _BufferSize
+         \brief Reads the current buffer from the I2C device - first writes the register address that will be read.
+         */
+        virtual short ReadDevice( size_t _BufferSize );
+
         virtual const char * DeviceBusPath;
 
         virtual unsigned char RegisterValue;
         virtual unsigned char RegisterAddress;
 
-        virtual int _Status;
         virtual int FileHandle;
         virtual int DeviceAddress;
+        virtual int BusId;
 
-        virtual short ReadValue;
-
-        virtual char ReadAndWriteBuffer[ 2 ];
-        virtual char WriteBufferOnly[ 1 ];
+        virtual char ReadAndWriteBuffer[ TWO_BYTES ];
+        virtual char WriteBufferOnly[ ONE_BYTE ];
     };
 }
 

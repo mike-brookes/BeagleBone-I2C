@@ -1,3 +1,5 @@
 .idea
 .DS_Store
 CMakeLists.txt
+BBBI2CDevice.cpp
+BBBI2CDevice.h

@@ -9,32 +9,41 @@ namespace I2CDevice {
     I2CDevice::I2CDevice( int _DeviceAddress, int _BusId ) {
 
         /*
-         * Setup Stage
+         * ** ## -- Setup Stage -- ## ** *
+         * SetBusPaths : Saves the file paths to the available buses for ease of access.
          */
         this->SetBusPaths( );
 
         /*
-         * Assignment Stage ( based on args )
+         * ** ## -- Assignment Stage ( based on args ) -- ## ** *
+         * ValidateBusId : Make sure we have a valid bus ID before proceeding.
+         * SelectABusPath : Used to specify which bus your I2C device is on.
+         * SetDeviceAddress: Hex value for your specific I2C Device.
          */
-        this->SelectABusPath( _BusId );
+        this->ValidateBusId( _BusId );
+        this->SelectABusPath( );
         this->SetDeviceAddress( _DeviceAddress );
 
         /*
-         * Init Stage
+         * ** ## -- Init Stage -- ## ** *
+         * OpenDevice : Creates a file handle for the device, should it be closed? Probably... :)
+         * ConnectToDevice : Assigns the device as an I2C Slave and checks availability using IOCTL
+         *
+         * More info on IOCTL : http://man7.org/linux/man-pages/man2/ioctl.2.html
          */
         this->OpenDevice( );
         this->ConnectToDevice( );
 
     }
 
-    I2CDevice::~I2CDevice( ) { }
+    I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
     void I2CDevice::SetBusPaths( ) {
         this->_Bus[ 1 ].BusPath = I2C_1;
         this->_Bus[ 2 ].BusPath = I2C_2;
     }
 
-    void I2CDevice::SelectABusPath( int _BusId ) { this->DeviceBusPath = this->_Bus[ _BusId ].BusPath; }
+    void I2CDevice::SelectABusPath( ) { this->DeviceBusPath = this->_Bus[ this->BusId ].BusPath; }
 
     void I2CDevice::SetRegisterValue( unsigned char _RegisterValue ){ this->RegisterValue = _RegisterValue; }
 
@@ -46,15 +55,21 @@ namespace I2CDevice {
 
     int I2CDevice::GetDeviceFileHandle( ) { return this->FileHandle; }
 
+    int I2CDevice::ValidateBusId( int _BusId ) {
+        this->BusId = _BusId;
+        if( this->BusId > I2C_BUS_COUNT || this->BusId < 1 )
+            __throw_invalid_argument( "Bus ID is not a valid BUS for this device." );
+    }
+
     short I2CDevice::GetValueFromRegister( unsigned char _RegisterValue ) {
-        this->SetRegisterValue( _RegisterValue );
-        if( this->WriteToDevice( READ_LEN ) == READ_LEN )
-            this->ReadDevice( READ_LEN );
+        this->SetRegisterAddress( _RegisterValue );
+        if( this->WriteToDevice( ONE_BYTE ) == ONE_BYTE )
+            this->ReadDevice( ONE_BYTE );
         else
             return -1;
     }
 
-    short I2CDevice::ReadDevice( int _BufferSize ) {
+    short I2CDevice::ReadDevice( size_t _BufferSize ) {
         unsigned char buff[ _BufferSize ];
         try {
             if( read( this->GetDeviceFileHandle( ), buff, _BufferSize ) != _BufferSize )
@@ -79,30 +94,27 @@ namespace I2CDevice {
         return this->FileHandle;
     }
 
-    /*!
-    \fn private function WriteToReg( int RegToWriteTo, int ValToWriteToReg )
-    \brief Writes to the RegToWriteTo value.
-    \param <int> RegToWriteTo (hex format), <int> ValToWriteToReg (hex format)
-    \return <int> -1 = failure to open the bus, 0 = success
-    */
     int I2CDevice::WriteToDevice( size_t _BufferSize  ) {
-        if( _BufferSize > READ_LEN ) {
-            this->ReadAndWriteBuffer[ 0 ] = this->RegisterAddress;
-            this->ReadAndWriteBuffer[ 1 ] = this->RegisterValue;
-        }
-        else
-            this->WriteBufferOnly[ 0 ] = this->RegisterValue;
-
+        int res;
         try {
-            if( write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize ) != _BufferSize )
-                return -1;
-            else
-                return 0;
+            if( _BufferSize > ONE_BYTE ) {
+                this->ReadAndWriteBuffer[ 0 ] = this->RegisterAddress;
+                this->ReadAndWriteBuffer[ 1 ] = this->RegisterValue;
+                res = write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize );
+            }
+            else {
+                this->WriteBufferOnly[ 0 ] = this->RegisterValue;
+                res = write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize );
+            }
         }
         catch( exception& e ) {
             cerr << "Fatal Exception Raised : Writing " << e.what( ) << endl;
             exit( EXIT_FAILURE );
         }
+        if( res != _BufferSize )
+            return -1;
+        else
+            return 0;
     }
 
 

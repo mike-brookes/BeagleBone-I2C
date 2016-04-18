@@ -15,13 +15,18 @@ int main ( void ) {
 
     I2CDevice I2C( 0x19, 1 );
 
-    I2C->
+    I2C.GetValueFromRegister( 0x28 );
+
+    I2C.SetRegisterValue( 0x77 ); //writing 0x77 to
+    I2C.SetRegisterAddress( 0x20 ); //register 0x20 activates the Accelerometer.
+
+    I2C.WriteToDevice( TWO_BYTES );
 
   //  BBBI2CDevice QBBBI( 0x19, QBBBI.I2C1 );
   //  cout << "0x28 = " << QBBBI.I2C_GetValue( 0x28 );
   //  cout << " | 0x29 = " << QBBBI.I2C_GetValue( 0x29 ) << endl;
 
-  //  QBBBI.I2C_WriteToReg( 0x20, 0x77 );
+  //
 
   //  cout << "0x28 = " << QBBBI.I2C_GetValue( 0x28 );
   //  cout << " | 0x29 = " << QBBBI.I2C_GetValue( 0x29 ) << endl;
