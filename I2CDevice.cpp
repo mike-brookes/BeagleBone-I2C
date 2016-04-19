@@ -6,14 +6,18 @@
 
 namespace I2CDevice {
 
-    I2CDevice::I2CDevice( int _DeviceAddress, int _BusId ) {
+    I2CDevice::I2CDevice( int _DeviceAddress, int _BusId ) throw( I2CSetupException& ) {
 
         /*
          * ** ## -- Setup Stage -- ## ** *
          * SetBusPaths : Saves the file paths to the available buses for ease of access.
          */
-        this->SetBusPaths( );
-
+        try {
+            this->SetBusPaths( );
+        }
+        catch( I2CSetupException& e ) {
+            cerr << e.what( ) << endl;
+        }
         /*
          * ** ## -- Assignment Stage ( based on args ) -- ## ** *
          * ValidateBusId : Make sure we have a valid bus ID before proceeding.
@@ -39,6 +43,8 @@ namespace I2CDevice {
     I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
     void I2CDevice::SetBusPaths( ) {
+        //TODO : validate paths; throw I2C exception on error
+        //TODO : check for number of I2C buses available; throw I2C exception
         this->_Bus[ 1 ].BusPath = I2C_1;
         this->_Bus[ 2 ].BusPath = I2C_2;
     }

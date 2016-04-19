@@ -6,6 +6,7 @@
 #define I2CDEVICE_H
 
 #include "IDevice.h" //<!--Interface
+#include "ExceptionAid.h"
 #include <cstdlib>
 #include <iostream>
 #include <unistd.h>
@@ -36,7 +37,7 @@ namespace I2CDevice {
          \param int _DeviceAddress = Hex address value for the I2C device.
          \param int _BusId = the I2C Bus no. that the I2C device is plugged into.
          */
-        I2CDevice( int _DeviceAddress, int _BusId );
+        I2CDevice( int _DeviceAddress, int _BusId ) throw( exception& );
 
         /*I2C Specific Members*/
 
