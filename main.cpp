@@ -22,12 +22,4 @@ int main ( void ) {
 
     I2C.WriteToDevice( TWO_BYTES );
 
-  //  BBBI2CDevice QBBBI( 0x19, QBBBI.I2C1 );
-  //  cout << "0x28 = " << QBBBI.I2C_GetValue( 0x28 );
-  //  cout << " | 0x29 = " << QBBBI.I2C_GetValue( 0x29 ) << endl;
-
-  //
-
-  //  cout << "0x28 = " << QBBBI.I2C_GetValue( 0x28 );
-  //  cout << " | 0x29 = " << QBBBI.I2C_GetValue( 0x29 ) << endl;
 }

@@ -21,7 +21,7 @@ namespace I2CDevice {
          * SetDeviceAddress: Hex value for your specific I2C Device.
          */
         this->ValidateBusId( _BusId );
-        this->SelectABusPath( );
+        this->SelectABusPath( this->_Bus[ _BusId ] );
         this->SetDeviceAddress( _DeviceAddress );
 
         /*
@@ -43,7 +43,7 @@ namespace I2CDevice {
         this->_Bus[ 2 ].BusPath = I2C_2;
     }
 
-    void I2CDevice::SelectABusPath( ) { this->DeviceBusPath = this->_Bus[ this->BusId ].BusPath; }
+    void I2CDevice::SelectABusPath( I2CBus _I2CBus ) { this->DeviceBusPath = _I2CBus.BusPath; }
 
     void I2CDevice::SetRegisterValue( unsigned char _RegisterValue ){ this->RegisterValue = _RegisterValue; }
 
@@ -57,23 +57,27 @@ namespace I2CDevice {
 
     int I2CDevice::ValidateBusId( int _BusId ) {
         this->BusId = _BusId;
-        if( this->BusId > I2C_BUS_COUNT || this->BusId < 1 )
-            __throw_invalid_argument( "Bus ID is not a valid BUS for this device." );
+        if( this->BusId > I2C_BUS_COUNT || this->BusId < 1 ) {
+            cerr <<  "Bus ID : " << _BusId << " is not a valid BUS for this device." << endl;
+            return EXIT_FAILURE;
+        }
+        else
+            return EXIT_SUCCESS;
     }
 
     short I2CDevice::GetValueFromRegister( unsigned char _RegisterValue ) {
         this->SetRegisterAddress( _RegisterValue );
         if( this->WriteToDevice( ONE_BYTE ) == ONE_BYTE )
-            this->ReadDevice( ONE_BYTE );
+            return this->ReadDevice( ONE_BYTE );
         else
-            return -1;
+            return EXIT_FAILURE;
     }
 
     short I2CDevice::ReadDevice( size_t _BufferSize ) {
         unsigned char buff[ _BufferSize ];
         try {
             if( read( this->GetDeviceFileHandle( ), buff, _BufferSize ) != _BufferSize )
-                return -1;
+                return EXIT_FAILURE;
             else
                 return buff[ 0 ];
         }
@@ -112,10 +116,9 @@ namespace I2CDevice {
             exit( EXIT_FAILURE );
         }
         if( res != _BufferSize )
-            return -1;
+            return EXIT_FAILURE;
         else
-            return 0;
+            return EXIT_SUCCESS;
     }
-
 
 }

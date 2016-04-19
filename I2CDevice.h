@@ -13,13 +13,12 @@
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
 
-#define I2C_1 "/dev/i2c-1" //!< File Path for the i2c-1 bus.
-#define I2C_2 "/dev/i2c-2" //!< File Path for the i2c-2 bus.
+#define I2C_BUS_COUNT   2               //!< How many I2C buses are available. Add paths below as required.
+#define I2C_1           "/dev/i2c-1"    //!< File Path for the i2c-1 bus.
+#define I2C_2           "/dev/i2c-2"    //!< File Path for the i2c-2 bus.
 
-#define ONE_BYTE  1
-#define TWO_BYTES 2
-
-#define I2C_BUS_COUNT 2
+#define ONE_BYTE        1               //!< Used for specifying how many bytes to read
+#define TWO_BYTES       2               //!< Used for specifying how many bytes to write
 
 namespace I2CDevice {
     using namespace std;
@@ -58,28 +57,28 @@ namespace I2CDevice {
         /**
          \fn Public GetValueFromRegister
          \param unsigned char _RegisterValue
-         \brief
+         \brief Writes the register that you want to read, then performs a read on that register.
          */
         virtual short GetValueFromRegister( unsigned char _RegisterValue );
 
         /**
          \fn Public SetRegisterValue
          \param unsigned char _RegisterValue
-         \brief
+         \brief Set the value that will next be written to the I2C device.
          */
         virtual void SetRegisterValue( unsigned char _RegisterValue );
 
         /**
          \fn Public SetRegisterAddress
          \param unsigned char _RegisterAddress
-         \brief
+         \brief Set the Register address that the _RegisterValue will be written to.
          */
         virtual void SetRegisterAddress( unsigned char _RegisterAddress );
 
         /**
          \fn Public WriteToDevice
          \param size_t _BufferSize
-         \brief
+         \brief Perform the write request. The _BufferSize is used to differentiate between a read or write request.
          */
         virtual int WriteToDevice( size_t _BufferSize );
 
@@ -112,7 +111,7 @@ namespace I2CDevice {
          \param none
          \brief Select which Bus Path we can find your I2C device at.
          */
-        virtual void SelectABusPath( );
+        virtual void SelectABusPath( I2CBus _I2CBus );
 
         /**
          \fn Protected SetDeviceAddress
@@ -155,6 +154,7 @@ namespace I2CDevice {
 
         virtual char ReadAndWriteBuffer[ TWO_BYTES ];
         virtual char WriteBufferOnly[ ONE_BYTE ];
+
     };
 }
 
