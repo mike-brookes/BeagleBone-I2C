@@ -6,7 +6,7 @@ ReadMe
 
 **This class is intended to be extended by classes for specific I2C devices (e.g LSM303DLHC)**
 
-Designed specifically to run on the BeagleBone Black and provide an class that can easily be extended.
+Designed to run on the BeagleBone Black and provide a class that can easily be extended.
 
 This project is a sub project of Quadro - Quadro contains the compiled binary for this class.
 
@@ -20,10 +20,13 @@ This project is a sub project of Quadro - Quadro contains the compiled binary fo
 - I used the default Debian install - Ubuntu will work just as well.
 - JetBrains CLion IDE
 - On a Mac book pro I use a SSHFS connection to automatically publish compiled binaries to the BBB *just to save time*
-- xtools cross compiler for compiling compatible executables for the BBB.
+- xtools cross compiler for compiling ARM-LINUX compatible executables for the BBB.
 
 **Notes**
-By default I2C2 is available for use - this I2C Bus is available on Block P9 pins 19 (SCL) and 20 (SDA) see image below.
+By default I2C2 is available for use on the BBB 
+
+**nb** this I2C Bus is available on Block P9 pins 19 (SCL) and 20 (SDA) see image below.
+
 The header file can very easily be modified for other I2C Buses as required, just add a new constant I2C_# with the relevant file path and increment the total I2C Buses constant.
 
 **Issues**
