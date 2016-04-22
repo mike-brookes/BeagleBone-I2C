@@ -5,17 +5,19 @@
 #ifndef IDEVICE_H
 #define IDEVICE_H
 
+#include <cstdio>
+
 namespace IDevice {
 
     class IDevice {
 
         public:
-            virtual ~IDevice( ) = 0;
+            virtual ~IDevice( ){ };
 
         private:
             virtual int OpenDevice( ) = 0;
-            virtual int WriteToDevice( int _BufferSize ) = 0;
-            virtual short ReadDevice( int _BufferSize ) = 0;
+            virtual int WriteToDevice( size_t _BufferSize ) = 0;
+            virtual short ReadDevice( size_t _BufferSize ) = 0;
             virtual int ConnectToDevice( ) = 0;
 
         protected:
