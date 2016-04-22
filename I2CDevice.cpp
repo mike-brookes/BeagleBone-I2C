@@ -4,7 +4,7 @@
 
 #include "I2CDevice.h"
 
-namespace I2CDevice {
+namespace I2C {
 
     I2CDevice::I2CDevice( int _DeviceAddress, int _BusId ) throw( I2CSetupException& ) {
 
@@ -12,12 +12,8 @@ namespace I2CDevice {
          * ** ## -- Setup Stage -- ## ** *
          * SetBusPaths : Saves the file paths to the available buses for ease of access.
          */
-        try {
-            this->SetBusPaths( );
-        }
-        catch( I2CSetupException& e ) {
-            cerr << e.what( ) << endl;
-        }
+        this->SetBusPaths( );
+
         /*
          * ** ## -- Assignment Stage ( based on args ) -- ## ** *
          * ValidateBusId : Make sure we have a valid bus ID before proceeding.
@@ -43,10 +39,7 @@ namespace I2CDevice {
     I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
     void I2CDevice::SetBusPaths( ) {
-        //TODO : validate paths; throw I2C exception on error
-        //TODO : check for number of I2C buses available; throw I2C exception
-        this->_Bus[ 1 ].BusPath = I2C_1;
-        this->_Bus[ 2 ].BusPath = I2C_2;
+        this->_Bus[ 1 ].BusPath = this->ValidateBusPath( (char *)I2C_1 );
     }
 
     void I2CDevice::SelectABusPath( I2CBus _I2CBus ) { this->DeviceBusPath = _I2CBus.BusPath; }
@@ -61,70 +54,74 @@ namespace I2CDevice {
 
     int I2CDevice::GetDeviceFileHandle( ) { return this->FileHandle; }
 
-    int I2CDevice::ValidateBusId( int _BusId ) {
+    int I2CDevice::ValidateBusId( int _BusId ) throw( I2CSetupException& ) {
         this->BusId = _BusId;
         if( this->BusId > I2C_BUS_COUNT || this->BusId < 1 ) {
-            cerr <<  "Bus ID : " << _BusId << " is not a valid BUS for this device." << endl;
-            return EXIT_FAILURE;
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Bus ID : %d  is not a valid BUS for this device.", _BusId );
+            throw( I2CSetupException( this->ErrMessage ) );
         }
         else
             return EXIT_SUCCESS;
     }
 
-    short I2CDevice::GetValueFromRegister( unsigned char _RegisterValue ) {
-        this->SetRegisterAddress( _RegisterValue );
-        if( this->WriteToDevice( ONE_BYTE ) == ONE_BYTE )
+    char * I2CDevice::ValidateBusPath( char * _I2CBusProposedPath ) throw( I2CSetupException& ) {
+        if( stat ( _I2CBusProposedPath, &buffer) == 0 )
+            return _I2CBusProposedPath;
+        else{
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to locate the I2C Bus file : %s", _I2CBusProposedPath );
+            throw I2CSetupException( this->ErrMessage );
+        }
+    }
+
+    short I2CDevice::GetValueFromRegister( unsigned char _RegisterAddress ) {
+        this->SetRegisterAddress( _RegisterAddress );
+        this->WriteBufferOnly[ 0 ] = this->RegisterAddress;
+        if( write( this->GetDeviceFileHandle( ), this->WriteBufferOnly, 1 ) == 1 ) {
             return this->ReadDevice( ONE_BYTE );
-        else
-            return EXIT_FAILURE;
+        }
+        else {
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to write to file : %s", this->GetFilePath( ));
+            throw I2CSetupException( this->ErrMessage );
+        }
     }
 
-    short I2CDevice::ReadDevice( size_t _BufferSize ) {
+    short I2CDevice::ReadDevice( size_t _BufferSize ) throw( I2CSetupException& ) {
         unsigned char buff[ _BufferSize ];
-        try {
-            if( read( this->GetDeviceFileHandle( ), buff, _BufferSize ) != _BufferSize )
-                return EXIT_FAILURE;
-            else
-                return buff[ 0 ];
+        if( read( this->GetDeviceFileHandle( ), buff, _BufferSize ) != _BufferSize ) {
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to read from file : %s", this->GetFilePath( ) );
+            throw I2CSetupException( this->ErrMessage );
         }
-        catch( exception& e ) {
-            cerr << "Fatal Exception Raised : Reading " << e.what( ) << endl;
-            exit( EXIT_FAILURE );
-        }
+        else
+            return buff[ 0 ];
     }
 
-    int I2CDevice::OpenDevice( ) {
-        try {
-            this->FileHandle = open( this->GetFilePath( ), O_RDWR );
-        }
-        catch( exception& e ){
-            cerr << "Fatal Exception Raised : Opening " << this->GetFilePath( ) << " for RDWR. Error : " << e.what( ) << endl;
-            exit( EXIT_FAILURE );
+    int I2CDevice::OpenDevice( ) throw( I2CSetupException& ) {
+        this->FileHandle = open( this->GetFilePath( ), O_RDWR );
+        if( this->FileHandle == 0 ) {
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to open file : %s", this->GetFilePath( ) );
+            throw I2CSetupException( this->ErrMessage );
         }
         return this->FileHandle;
     }
 
-    int I2CDevice::WriteToDevice( size_t _BufferSize  ) {
-        int res;
+    int I2CDevice::WriteToDevice( size_t _BufferSize  ) throw( I2CSetupException& ) {
         try {
             if( _BufferSize > ONE_BYTE ) {
                 this->ReadAndWriteBuffer[ 0 ] = this->RegisterAddress;
                 this->ReadAndWriteBuffer[ 1 ] = this->RegisterValue;
-                res = write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize );
+                write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize );
             }
             else {
-                this->WriteBufferOnly[ 0 ] = this->RegisterValue;
-                res = write( this->GetDeviceFileHandle( ), this->ReadAndWriteBuffer, _BufferSize );
+                this->WriteBufferOnly[ 0 ] = this->RegisterAddress;
+                write( this->GetDeviceFileHandle( ), this->WriteBufferOnly, _BufferSize );
             }
         }
         catch( exception& e ) {
-            cerr << "Fatal Exception Raised : Writing " << e.what( ) << endl;
-            exit( EXIT_FAILURE );
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to write to file : %s", this->GetFilePath( ) );
+            throw I2CSetupException( this->ErrMessage );
         }
-        if( res != _BufferSize )
-            return EXIT_FAILURE;
-        else
-            return EXIT_SUCCESS;
+
+        return EXIT_SUCCESS;
     }
 
 }
