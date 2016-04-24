@@ -6,8 +6,17 @@
 
 namespace I2C {
 
-    I2CDevice::I2CDevice( int _DeviceAddress, int _BusId ) throw( I2CSetupException& ) {
+    I2CDevice::I2CDevice( ) {
+        this->DeviceAddress = 0;
+        this->BusId = 0;
+        this->DeviceInitialised = false;
+    }
 
+    I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
+
+    void I2CDevice::InitDevice( ) {
+        if(!this->DeviceAddress) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetDeviceAddress([hex address])' )" );
+        if(!this->BusId) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetBusId([bus number])' )" );
         /*
          * ** ## -- Setup Stage -- ## ** *
          * SetBusPaths : Saves the file paths to the available buses for ease of access.
@@ -34,9 +43,8 @@ namespace I2C {
         this->OpenDevice( );
         this->ConnectToDevice( );
 
+        this->DeviceInitialised = true;
     }
-
-    I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
     void I2CDevice::SetBusPaths( ) {
         this->_Bus[ 1 ].BusPath = this->ValidateBusPath( (char *)I2C_1 );
@@ -47,8 +55,6 @@ namespace I2C {
     void I2CDevice::SetRegisterValue( unsigned char _RegisterValue ){ this->RegisterValue = _RegisterValue; }
 
     void I2CDevice::SetRegisterAddress( unsigned char _RegisterAddress ){ this->RegisterAddress = _RegisterAddress; }
-
-    void I2CDevice::SetDeviceAddress( int _DeviceAddress ) { this->DeviceAddress = _DeviceAddress; }
 
     const char * I2CDevice::GetFilePath( ) { return this->DeviceBusPath; }
 
@@ -74,6 +80,7 @@ namespace I2C {
     }
 
     short I2CDevice::GetValueFromRegister( unsigned char _RegisterAddress ) {
+        if(!this->DeviceInitialised) throw I2CSetupException( "I2C Device Not Initialised ( try : 'obj->InitDevice()' )" );
         this->SetRegisterAddress( _RegisterAddress );
         this->WriteBufferOnly[ 0 ] = this->RegisterAddress;
         if( write( this->GetDeviceFileHandle( ), this->WriteBufferOnly, 1 ) == 1 ) {
@@ -86,6 +93,7 @@ namespace I2C {
     }
 
     short I2CDevice::ReadDevice( size_t _BufferSize ) throw( I2CSetupException& ) {
+        if(!this->DeviceInitialised) throw I2CSetupException( "I2C Device Not Initialised ( try : 'obj->InitDevice()' )" );
         unsigned char buff[ _BufferSize ];
         if( read( this->GetDeviceFileHandle( ), buff, _BufferSize ) != _BufferSize ) {
             snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Fatal I2C Error - Unable to read from file : %s", this->GetFilePath( ) );
@@ -105,6 +113,7 @@ namespace I2C {
     }
 
     int I2CDevice::WriteToDevice( size_t _BufferSize  ) throw( I2CSetupException& ) {
+        if(!this->DeviceInitialised) throw I2CSetupException( "I2C Device Not Initialised ( try : 'obj->InitDevice()' )" );
         try {
             if( _BufferSize > ONE_BYTE ) {
                 this->ReadAndWriteBuffer[ 0 ] = this->RegisterAddress;

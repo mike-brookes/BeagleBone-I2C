@@ -5,8 +5,9 @@
 #ifndef I2CDEVICE_H
 #define I2CDEVICE_H
 
-#include "IDevice.h"
-#include "ExceptionAid.h"
+#include "../Device/IDevice.h"
+#include "../Exceptions/ExceptionAid.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <unistd.h>
@@ -36,26 +37,16 @@ namespace I2C {
 
         /**
          \fn Public Constructor
-         \param int _DeviceAddress = Hex address value for the I2C device.
-         \param int _BusId = the I2C Bus no. that the I2C device is plugged into.
          */
-        I2CDevice( int _DeviceAddress, int _BusId ) throw( I2CSetupException& );
+        I2CDevice( );
 
         /*I2C Specific Members*/
 
         /**
-         \fn Public GetDeviceHandle
-         \param none
-         \brief Returns the current FileHandle for reading and writing to the I2C device.
+         \fn Public InitDevice
+         \brief Requires the device address and bus id to be configured.
          */
-        int GetDeviceFileHandle( );
-
-        /**
-         \fn Public GetFilePath
-         \param none
-         \brief Returns then FilePath for accessing the I2C device.
-         */
-        const char * GetFilePath( );
+        void InitDevice( ) throw( I2CSetupException& );
 
         /**
          \fn Public GetValueFromRegister
@@ -102,6 +93,20 @@ namespace I2C {
     protected:
 
         /**
+         \fn Protected GetDeviceHandle
+         \param none
+         \brief Returns the current FileHandle for reading and writing to the I2C device.
+         */
+        int GetDeviceFileHandle( );
+
+        /**
+         \fn Protected GetFilePath
+         \param none
+         \brief Returns then FilePath for accessing the I2C device.
+         */
+        const char * GetFilePath( );
+
+        /**
          \fn Protected SetBusPaths
          \param none
          \brief Set Path to all the available buses. As set with I2CBus (struct) and Defines.
@@ -134,7 +139,14 @@ namespace I2C {
          \param int _DeviceAddress
          \brief Used to store the device address (Hex)
          */
-        void SetDeviceAddress( int _DeviceAddress );
+        virtual void SetDeviceAddress( int _DeviceAddress ) = 0;
+
+        /**
+         \fn Protected SetBusId
+         \param int _BusId
+         \brief Used to store the bus id (int)
+         */
+        virtual void SetBusId( int _BusId ) = 0;
 
         /* From IDevice Interface*/
 
@@ -171,6 +183,8 @@ namespace I2C {
         int FileHandle;
         int DeviceAddress;
         int BusId;
+
+        bool DeviceInitialised;
 
     };
 }
