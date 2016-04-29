@@ -118,7 +118,7 @@ namespace I2C {
          \param int _BusId
          \brief Make sure the BusId being used is valid.
          */
-        int ValidateBusId( int _BusId ) throw( I2CSetupException& );
+        int ValidateBusId( ) throw( I2CSetupException& );
 
         /**
          \fn Protected ValidateBusPath
@@ -132,14 +132,14 @@ namespace I2C {
          \param none
          \brief Select which Bus Path we can find your I2C device at.
          */
-        void SelectABusPath( I2CBus _I2CBus );
+        void SelectABusPath( );
 
         /**
          \fn Protected SetDeviceAddress
          \param int _DeviceAddress
          \brief Used to store the device address (Hex)
          */
-        virtual void SetDeviceAddress( int _DeviceAddress ) = 0;
+        virtual void SetDeviceAddress( unsigned char _DeviceAddress ) = 0;
 
         /**
          \fn Protected SetBusId

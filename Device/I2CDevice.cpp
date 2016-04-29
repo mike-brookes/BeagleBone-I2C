@@ -2,7 +2,7 @@
 // Created by Michael Brookes on 14/04/2016.
 //
 
-#include "I2CDevice.h"
+#include "./I2CDevice.h"
 
 namespace I2C {
 
@@ -14,7 +14,7 @@ namespace I2C {
 
     I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
-    void I2CDevice::InitDevice( ) {
+    void I2CDevice::InitDevice( ) throw( I2CSetupException& ) {
         if(!this->DeviceAddress) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetDeviceAddress([hex address])' )" );
         if(!this->BusId) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetBusId([bus number])' )" );
         /*
@@ -29,9 +29,8 @@ namespace I2C {
          * SelectABusPath : Used to specify which bus your I2C device is on.
          * SetDeviceAddress: Hex value for your specific I2C Device.
          */
-        this->ValidateBusId( _BusId );
-        this->SelectABusPath( this->_Bus[ _BusId ] );
-        this->SetDeviceAddress( _DeviceAddress );
+        this->ValidateBusId( );
+        this->SelectABusPath( );
 
         /*
          * ** ## -- Init Stage -- ## ** *
@@ -50,20 +49,19 @@ namespace I2C {
         this->_Bus[ 1 ].BusPath = this->ValidateBusPath( (char *)I2C_1 );
     }
 
-    void I2CDevice::SelectABusPath( I2CBus _I2CBus ) { this->DeviceBusPath = _I2CBus.BusPath; }
+    void I2CDevice::SelectABusPath( ) { this->DeviceBusPath = _Bus[ this->BusId ].BusPath; }
+
+    void I2CDevice::SetRegisterAddress( unsigned char _RegisterAddress ) { this->RegisterAddress = _RegisterAddress; }
 
     void I2CDevice::SetRegisterValue( unsigned char _RegisterValue ){ this->RegisterValue = _RegisterValue; }
-
-    void I2CDevice::SetRegisterAddress( unsigned char _RegisterAddress ){ this->RegisterAddress = _RegisterAddress; }
 
     const char * I2CDevice::GetFilePath( ) { return this->DeviceBusPath; }
 
     int I2CDevice::GetDeviceFileHandle( ) { return this->FileHandle; }
 
-    int I2CDevice::ValidateBusId( int _BusId ) throw( I2CSetupException& ) {
-        this->BusId = _BusId;
+    int I2CDevice::ValidateBusId( ) throw( I2CSetupException& ) {
         if( this->BusId > I2C_BUS_COUNT || this->BusId < 1 ) {
-            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Bus ID : %d  is not a valid BUS for this device.", _BusId );
+            snprintf( this->ErrMessage, sizeof( this->ErrMessage ), "Bus ID : %d  is not a valid BUS for this device.", this->BusId );
             throw( I2CSetupException( this->ErrMessage ) );
         }
         else
