@@ -7,17 +7,18 @@
 
 #include <exception>
 #include <iostream>
+#include <string>
 
 namespace I2C {
     using namespace std;
 
     class I2CSetupException : public exception {
     public:
-        I2CSetupException( char* errMessage ):errMessage_(errMessage){}
-        const char* what() const throw() { return errMessage_; }
+        I2CSetupException( string errMessage ):errMessage_(errMessage){}
+        const char* what() const throw() { return errMessage_.c_str( ); }
 
     private:
-        char* errMessage_;
+        string errMessage_;
     };
 }
 
