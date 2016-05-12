@@ -19,7 +19,7 @@ namespace IDevice {
         /fn pure virtual OpenDevice
         /brief All devices implementing this interface will require this functionality.
         */
-        virtual void InitDevice( ) = 0;
+        virtual void InitI2C( ) = 0;
 
         /*
         /fn pure virtual OpenDevice

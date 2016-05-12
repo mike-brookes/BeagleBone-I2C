@@ -46,7 +46,7 @@ namespace I2C {
          \fn Public InitDevice
          \brief Requires the device address and bus id to be configured.
          */
-        void InitDevice( ) throw( I2CSetupException& );
+        void InitI2C( ) throw( I2CSetupException& );
 
         /**
          \fn Public GetValueFromRegister
@@ -173,15 +173,15 @@ namespace I2C {
 
         const char * DeviceBusPath;
 
+        unsigned char DeviceAddress;
         unsigned char RegisterValue;
         unsigned char RegisterAddress;
 
         char ReadAndWriteBuffer[ TWO_BYTES ];
         char WriteBufferOnly[ ONE_BYTE ];
-        char ErrMessage[ MAX_BUFF ];
 
+        char ErrMessage[ MAX_BUFF ];
         int FileHandle;
-        int DeviceAddress;
         int BusId;
 
         bool DeviceInitialised;

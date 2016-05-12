@@ -23,7 +23,7 @@ public:
     LSM303_Accelerometer( unsigned char _DeviceAddress, int _BusId ) {
         this->SetDeviceAddress( _DeviceAddress );
         this->SetBusId( _BusId );
-        this->InitDevice( );
+        this->InitI2C( );
     }
 };
 /*
