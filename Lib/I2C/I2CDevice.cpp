@@ -4,7 +4,7 @@
 
 #include "./I2CDevice.h"
 
-namespace I2C {
+namespace abI2C {
 
     I2CDevice::I2CDevice( ) {
         this->DeviceAddress = 0x00;

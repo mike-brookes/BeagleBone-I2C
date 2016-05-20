@@ -11,7 +11,7 @@
 /*
  * Simplest implementation of a usable class extending an I2C device
  */
-class LSM303DLHC : public I2C::I2CDevice {
+class LSM303DLHC : public abI2C::I2CDevice {
 public:
     LSM303DLHC( ) { }
     void SetDeviceAddress( unsigned char _DeviceAddress ){ this->DeviceAddress = _DeviceAddress; }
@@ -32,7 +32,7 @@ public:
  */
 int main ( void ) {
 
-    using namespace I2C;
+    using namespace abI2C;
 
     LSM303_Accelerometer *Accelerometer;
 

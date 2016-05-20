@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 
-namespace I2C {
+namespace abI2C {
     using namespace std;
 
     class I2CSetupException : public exception {

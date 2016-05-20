@@ -7,7 +7,7 @@
 
 #include <cstdio>
 
-namespace IDevice {
+namespace abIDevice {
     /*
      /brief Interface class for all devices
      */
