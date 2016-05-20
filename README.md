@@ -1,5 +1,5 @@
-# BeagleBoneBlack-I2C
-Class for handling I2C devices on the BeagleBone Black
+# BeagleBone-I2C
+C++ Class for handling I2C devices on the BeagleBone
 
 ReadMe
 -------------
