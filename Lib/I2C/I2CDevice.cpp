@@ -14,7 +14,7 @@ namespace I2C {
 
     I2CDevice::~I2CDevice( ) { close( this->FileHandle ); }
 
-    void I2CDevice::InitI2C( ) throw( I2CSetupException& ) {
+    void I2CDevice::InitDevice( ) throw( I2CSetupException& ) {
         if(!this->DeviceAddress) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetDeviceAddress([hex address])' )" );
         if(!this->BusId) throw I2CSetupException( "I2C Device Not Configured ( try : 'obj->SetBusId([bus number])' )" );
         /*
